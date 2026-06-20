@@ -71,7 +71,7 @@ function createEllipsoid(f1: Vector3, f2: Vector3, semiMajor: number): Ellipsoid
   const c = focalDist / 2;
   const minA = c / Math.sqrt(0.75);
   const a = Math.max(semiMajor, minA);
-  const b = Math.sqrt(Math.max(0.01, a * a - c * c));
+  const b = Math.min(Math.sqrt(Math.max(0.01, a * a - c * c)), 0.85 * a);
   focalDir.normalize();
   let up = new Vector3(0, 1, 0);
   if (Math.abs(focalDir.dot(up)) > 0.99) up = new Vector3(1, 0, 0);

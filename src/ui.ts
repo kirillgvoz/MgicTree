@@ -7,8 +7,9 @@ export function createUI(
   onChange: OnChange,
   onRefresh: OnRefresh,
   getParams: () => TreeParams | null,
-): { leafCount: number } {
-  let leafCount = 3000;
+  onTogglePixel: (on: boolean) => void,
+): { leafCount: number; onAddLeaves: (delta: number) => void } {
+  let leafCount = 0;
 
   const infoPanel = document.createElement('div');
   infoPanel.style.cssText = `
@@ -39,7 +40,7 @@ export function createUI(
 
   const input = document.createElement('input');
   input.type = 'range';
-  input.min = '500';
+  input.min = '0';
   input.max = '15000';
   input.step = '100';
   input.value = String(leafCount);
@@ -53,6 +54,24 @@ export function createUI(
     padding: 5px 16px; font: 13px/1.5 monospace; cursor: pointer;
     transition: background 0.15s;
   `;
+
+  const pixelLabel = document.createElement('label');
+  pixelLabel.style.cssText = 'display: flex; align-items: center; gap: 6px; cursor: pointer; color: #999; font: 12px/1.5 monospace;';
+
+  const pixelCheckbox = document.createElement('input');
+  pixelCheckbox.type = 'checkbox';
+  pixelCheckbox.checked = true;
+  pixelCheckbox.style.cssText = 'accent-color: #d4a017; cursor: pointer;';
+
+  const pixelText = document.createElement('span');
+  pixelText.textContent = 'Pixel';
+
+  pixelLabel.appendChild(pixelCheckbox);
+  pixelLabel.appendChild(pixelText);
+
+  pixelCheckbox.addEventListener('change', () => {
+    onTogglePixel(pixelCheckbox.checked);
+  });
 
   function updateInfo() {
     const p = getParams();
@@ -93,8 +112,17 @@ export function createUI(
   bottomBar.appendChild(input);
   bottomBar.appendChild(valueEl);
   bottomBar.appendChild(refreshBtn);
+  bottomBar.appendChild(pixelLabel);
 
   updateInfo();
 
-  return { leafCount };
+  function onAddLeaves(delta: number) {
+    leafCount = Math.min(15000, leafCount + delta);
+    input.value = String(leafCount);
+    valueEl.textContent = String(leafCount);
+    updateInfo();
+    onChange(leafCount);
+  }
+
+  return { leafCount, onAddLeaves };
 }

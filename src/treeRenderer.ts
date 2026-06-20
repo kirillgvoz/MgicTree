@@ -25,6 +25,7 @@ export function createLeafMesh(): InstancedMesh {
   const mesh = new InstancedMesh(leafGeometry, leafMaterial, MAX_LEAVES);
   mesh.instanceMatrix.setUsage(DynamicDrawUsage);
   mesh.count = 0;
+  mesh.frustumCulled = false;
   return mesh;
 }
 
@@ -48,6 +49,7 @@ export function createBranchMesh(): InstancedMesh {
   const mesh = new InstancedMesh(branchGeometry, branchMaterial, MAX_BRANCHES);
   mesh.instanceMatrix.setUsage(DynamicDrawUsage);
   mesh.count = 0;
+  mesh.frustumCulled = false;
   return mesh;
 }
 
