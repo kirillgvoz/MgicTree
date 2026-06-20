@@ -3,11 +3,18 @@ import { createScene, tickComets } from './renderer';
 import { getTreeData, getLeavesForCount, resetPool, getCurrentParams } from './tree';
 import { createLeafMesh, updateLeafMesh, createBranchMesh, updateBranchMesh, createTrunkMesh } from './treeRenderer';
 import { createUI } from './ui';
+import { getLeaves, getUpgradeLevel, applyUpgrades, setPixelArtSetting } from './game';
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 if (!canvas) throw new Error('Canvas element not found');
 
 const treeScene = createScene(canvas);
+
+applyUpgrades();
+const savedPixel = JSON.parse(localStorage.getItem('magictree_save') || '{}').pixelArt;
+if (savedPixel !== undefined) {
+  treeScene.enablePixelArt(savedPixel);
+}
 
 const treeData = getTreeData();
 let trunkMesh = createTrunkMesh(treeData.trunk);
@@ -83,7 +90,7 @@ function updateFallingLeaves() {
   if (fallingLeafMesh.instanceColor) fallingLeafMesh.instanceColor.needsUpdate = true;
 }
 
-let currentLeafCount = 3000;
+let currentLeafCount = getLeaves();
 
 function setLeafCount(count: number) {
   currentLeafCount = count;
@@ -111,7 +118,7 @@ function refreshAll() {
   trunkMesh = createTrunkMesh(getTreeData().trunk);
   treeScene.treeGroup.add(trunkMesh);
 
-  const count = getCurrentParams()?.leafCount ?? 0;
+  const count = getLeaves();
   const { branches, leaves, connections } = getLeavesForCount(count);
   updateLeafMesh(leafMesh, leaves);
   updateBranchMesh(branchMesh, branches);
@@ -125,14 +132,14 @@ function refreshAll() {
   fallingLeaves = [];
 }
 
-let addLeaves: (delta: number) => void;
+let addLeavesFn: (delta: number) => void;
 
 const { leafCount, onAddLeaves } = createUI(setLeafCount, refreshAll, getCurrentParams, treeScene.enablePixelArt);
-addLeaves = onAddLeaves;
+addLeavesFn = onAddLeaves;
 setLeafCount(leafCount);
 
-canvas.addEventListener('pointerdown', () => addLeaves(10));
-canvas.addEventListener('wheel', () => addLeaves(10));
+canvas.addEventListener('pointerdown', () => addLeavesFn(1));
+canvas.addEventListener('wheel', () => addLeavesFn(1), { passive: true });
 
 function animateLoop() {
   updateFallingLeaves();
